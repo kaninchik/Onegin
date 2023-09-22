@@ -1,49 +1,65 @@
-#include<stdio.h>
-#include<string.h>
-#include<assert.h>
+#include<cstdio>
+#include<cstring>
+#include<cassert>
+#include<cstdlib>
+
 #include"My_string.h"
 #include"Process_file.h"
 
 
-void My_sort(char **text, int N_strings, int (*Compare)(char*, char*))
+void My_sort(void *arr, int n_strings, int ellement_size, int (*Compare)(void *str1, void *str2))
 {
-    assert(text != NULL);
+    assert(arr != NULL);
 
-    for(int n = 0; n < N_strings - 1; n++)
+    char *strings = (char *)arr;
+
+    for(int n = 0; n < n_strings - 1; n++)
     {
-        bool nSwap = 0;
+        bool is_swap = false;
 
-        for(int i = 0; i < N_strings - n - 1; i++)
+        for(int i = 0; i < n_strings - n - 1; i++)
         {
-            if(Compare(text[i], text[i+1]) > 0)
+            if(Compare(strings + i * ellement_size, strings + (i + 1)*ellement_size) > 0)
             {
-                nSwap = 1;
-                My_swap(&text[i], &text[i+1]);
+                is_swap = true;
+
+                My_swap(strings + i*ellement_size, strings + (i + 1)*ellement_size, ellement_size);
             }
         }
 
-        if(nSwap == 0)
+        if(is_swap == false)
             break;
     }
 }
 
-void My_swap(char **str1, char **str2)
+void My_swap(void *str1, void *str2, size_t size_one)
 {
     assert(str1 != NULL);
     assert(str2 != NULL);
 
-    char *Swap = *str1;
+    void *tmp = calloc(1, size_one);
 
-    assert(Swap != NULL);
+    if(tmp == NULL)
+    {
+        printf("I can't find that much memory for you((");
 
-    *str1 = *str2;
-    *str2 = Swap;
+        exit(EXIT_FAILURE);
+    }
+
+    memcpy(tmp, str1, size_one);
+    memcpy(str1, str2, size_one);
+    memcpy(str2, tmp, size_one);
+
+    free(tmp);
 }
 
-int My_strcmp_rev(char *str1, char *str2)
+int My_strcmp_rev(void *ptr1, void *ptr2)
 {
-    assert(str1 != NULL);
-    assert(str2 != NULL);
+    assert(ptr1 != NULL);
+    assert(ptr2 != NULL);
+
+    char *str1 = (char *)ptr1;
+    char *str2 = (char *)ptr2;
 
     for(int i = strlen(str1) - 1, j = strlen(str2) - 1; i >= 0 && j >= 0;)
     {
@@ -64,10 +80,13 @@ int My_strcmp_rev(char *str1, char *str2)
     return 0;
 }
 
-int My_strcmp(char *str1, char *str2)
+int My_strcmp(void *ptr1, void *ptr2)
 {
-    assert(str1 != NULL);
-    assert(str2 != NULL);
+    assert(ptr1 != NULL);
+    assert(ptr2 != NULL);
+
+    char *str1 = (char *)ptr1;
+    char *str2 = (char *)ptr2;
 
     for(int i = 0, j = 0; str1[i] != '\0' && str2[j] != '\0'; )
     {
@@ -88,8 +107,10 @@ int My_strcmp(char *str1, char *str2)
     return 0;
 }
 
-void output_poem(char **text, int N_strings)
+void Output_poem(char **strings, int n_strings)
 {
-    for(int i = 0; i < N_strings; i++)
-        puts(*(text + i));
+    assert(strings != NULL);
+
+    for(int i = 0; i < n_strings; i++)
+        puts(strings[i]);
 }

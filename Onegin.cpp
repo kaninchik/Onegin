@@ -1,36 +1,28 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<assert.h>
+#include<cstdio>
+#include<cstdlib>
+#include<cstring>
+#include<cassert>
 #include<sys/stat.h>
+
 #include"My_string.h"
 #include"Process_file.h"
 
 
 int main()
 {
-    FILE *fp = fopen("Onegin.txt", "r");
+    size_t file_size = 0;
+    size_t n_strings = 0;
 
-    int file_size = Get_file_size(fp);
+    char *buffer = Get_file_content(&file_size, &n_strings);
 
-    char *buffer = Fill_buffer(fp, file_size);
+    char **strings = Fill_text(buffer, n_strings, file_size);
 
-    assert(buffer != NULL);
+    My_sort(strings, n_strings, sizeof(char *), My_strcmp);
 
-    fclose(fp);
-
-    int N_strings = Get_n_rows(buffer, file_size);
-
-    char **text = Fill_text(buffer, N_strings, file_size);
-
-    My_sort(text, N_strings, My_strcmp_rev);
-
-    output_poem(text, N_strings);
+    Output_poem(strings, n_strings);
 
     free(buffer);
-    free(text);
-
-    getchar();
+    free(strings);
 
     return 0;
 }

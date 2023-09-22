@@ -1,16 +1,18 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<assert.h>
+#include<cstdio>
+#include<cstdlib>
+#include<cstring>
+#include<cassert>
 #include<sys/stat.h>
+
 #include"My_string.h"
 #include"Process_file.h"
 
-int Get_file_size(FILE *fp)
+
+size_t Get_file_size(FILE *fp)
 {
     assert(fp != NULL);
 
-    struct stat st;
+    struct stat st = {};
     int fd = fileno(fp);
 
     fstat(fd, &st);
@@ -18,58 +20,86 @@ int Get_file_size(FILE *fp)
     return st.st_size;
 }
 
-char *Fill_buffer(FILE *fp, int file_size)
+char *Get_file_content(size_t *file_size, size_t *n_strings)
 {
-    assert(fp != NULL);
+    FILE *fp = fopen("Onegin.txt", "rb");
 
-    char *buffer = (char*)calloc(file_size + 1, sizeof(char));
+    if(fp == NULL)
+    {
+        printf("I can't find your file((");
+
+        exit(EXIT_FAILURE);
+    }
+
+    *file_size = Get_file_size(fp);
+
+    char *buffer = (char*)calloc(*file_size + 1, sizeof(char));
 
     if(buffer == NULL)
-        printf("Couldn't allocated that much memory");
+    {
+        printf("I can't find that much memory for you((");
 
-    fread(buffer, sizeof(char), file_size + 1, fp);
+        exit(EXIT_FAILURE);
+    }
+
+    size_t sym = fread(buffer, sizeof(char), *file_size + 1, fp);
+
+    if(sym != *file_size)
+    {
+        printf("I can't transfer the contents of the file to the line((");
+
+        exit(EXIT_FAILURE);
+    }
+
+    puts(buffer);
 
     fclose(fp);
+
+    *n_strings = Get_n_rows(buffer, *file_size);
 
     return buffer;
 }
 
-int Get_n_rows(char *buffer, int file_size)
+size_t Get_n_rows(char *buffer, size_t file_size)
 {
     assert(buffer != NULL);
 
-    int N_strings = 0;
+    size_t n_strings = 0;
 
-    for(int i = 0; i < file_size; i++)
+    for(size_t i = 0; i < file_size; i++)
     {
         if(buffer[i] == '\n')
-            N_strings++;
+            n_strings++;
     }
 
-    return N_strings;
+    return n_strings;
 }
 
-char **Fill_text(char *buffer, int N_strings, int file_size)
+char **Fill_text(char *buffer, size_t n_strings, size_t file_size)
 {
     assert(buffer != NULL);
 
-    char **text = (char**)calloc(N_strings, sizeof(char*));
+    char **strings = (char**)calloc(n_strings, sizeof(char*));
 
-    if(text == NULL)
-        printf("Couldn't allocated that much memory");
+    if(strings == NULL)
+    {
+        printf("I can't find that much memory for you((");
+
+        exit(EXIT_FAILURE);
+    }
 
     int line = 1;
 
-    text[0] = buffer;
+    strings[0] = buffer;
 
-    for(int i = 1; i < file_size; i++)
+    for(size_t i = 1; i < file_size; i++)
     {
         if(buffer[i] == '\n')
         {
             buffer[i] = '\0';
-            text[line++] = (buffer + i + 1);
+            strings[line++] = (buffer + i + 1);
         }
     }
 
-    return text;
+    return strings;
 }
